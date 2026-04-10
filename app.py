@@ -1,24 +1,26 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
 from dotenv import load_dotenv
-import json
 
 load_dotenv()
 from graph.tutor_graph import build_graph
 
-def main():
-    graph = build_graph()
+app = FastAPI()
+graph = build_graph()
 
-    topic = input("Enter topic: ")
-    instructions= input("Enter any specific instructions for your tutor: ")
+
+class TutorRequest(BaseModel):
+    topic: str
+    instructions: str
+
+
+@app.post("/generate")
+def generate_tutor(req: TutorRequest):
     state = {
-        "topic": topic,
-        "instructions": instructions
+        "topic": req.topic,
+        "instructions": req.instructions
     }
 
     result = graph.invoke(state)
 
-    print("\n📚 RESULT:\n")
-    print(json.dumps(result, indent=2))
-
-
-if __name__ == "__main__":
-    main()
+    return result
